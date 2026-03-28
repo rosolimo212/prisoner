@@ -2,6 +2,9 @@ import random
 import json
 import time
 
+import numpy as np
+import pandas as pd
+
 def current_output(message):
     """
     Send the mesage to current output format (console, logs, telegram, browser, etc.)
@@ -51,6 +54,19 @@ def make_round(player1, player2, C=3, D=5, c=0, d=1):
     elif player1 == 0 and player2 == 0:
         return d, d
 
+def human_control(logs):
+    current_output("Public logs:")
+    current_output(str(logs))
+    current_output("Your move:")
+
+    message = current_input()
+    if message not in ['0', '1']:
+        current_output("Invalid move: {message}".format(message=message))
+        current_output("it meant 0 for us")
+        message = '0'
+    
+    return int(message)
+
 def always_yes_bot(logs):
     return 1
 
@@ -61,7 +77,12 @@ def random_bot(logs):
     return random.randint(0, 1)
 
 
-def make_game(bot=random_bot, is_save=0, C=3, D=5, c=0, d=1):
+def make_game(
+                player1=human_control, 
+                player2=random_bot, 
+                is_save=0, 
+                C=3, D=5, c=0, d=1
+                ):
     """
     Make a game of prisoner's dilemma for random number of rounds.
     Every round new choices are made.
@@ -80,17 +101,12 @@ def make_game(bot=random_bot, is_save=0, C=3, D=5, c=0, d=1):
     logs = []
     for i in range(number_of_rounds):
         current_output("Round {i}".format(i=i))
-        current_output("Your move")
-        player1 = current_input()
-        if player1 not in ['0', '1']:
-            current_output("Invalid move: {player1}".format(player1=player1))
-            current_output("it meant 0 for us")
-            player1 = '0'
-        player1 = int(player1)
-        player2 = bot(logs)
+
+        player1_choice = player1(logs)
+        player2_choice = player2(logs)
 
         now = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
-        round_res = make_round(player1, player2)
+        round_res = make_round(player1_choice, player2_choice)
         
         player1_score = player1_score + round_res[0]
         player2_score = player2_score + round_res[1]
@@ -98,15 +114,15 @@ def make_game(bot=random_bot, is_save=0, C=3, D=5, c=0, d=1):
         iter_log = {
             'timestamp': now,
             'round': i,
-            'player1': player1,
-            'player2': player2,
+            'player1': player1_choice,
+            'player2': player2_choice,
             'player1_round_score': round_res[0],
             'player2_round_score': round_res[1],
             'player1_total_score': player1_score,
             'player2_total_score': player2_score
         }
         logs.append(iter_log)
-        print(logs)
+        current_output(logs)
         
     current_output("Game over")
     current_output("Player 1 total score: {player1_score}".format(player1_score=player1_score))
@@ -125,4 +141,4 @@ def make_game(bot=random_bot, is_save=0, C=3, D=5, c=0, d=1):
 
     return logs
 
-make_game(is_save=1)
+make_game(player1=human_control, player2=always_no_bot, is_save=0)
