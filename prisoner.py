@@ -117,6 +117,7 @@ def tit_for_tat(logs, position):
 def make_game(
                 player1=human_control, 
                 player2=random_bot, 
+                max_distance=15,
                 is_save=0, 
                 is_verbose=0,
                 is_show_results=1,
@@ -134,7 +135,7 @@ def make_game(
 
     """
 
-    number_of_rounds = random.randint(3, 10)
+    number_of_rounds = random.randint(3, max_distance)
     player1_score = 0
     player2_score = 0
     logs = []
